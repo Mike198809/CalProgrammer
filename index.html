@@ -1,341 +1,304 @@
-<!DOCTYPE html>
-<html>
 
+<!DOCTYPE html>
+<html lang="es">
 <head>
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<title>Programmer Calculator</title>
+<title>Conversor de almacenamiento</title>
 
-<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-<link rel="manifest" href="manifest.json">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="ProgCalc">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 
 <style>
 
+*{
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
 body{
-background:#000;
-color:#00ff9c;
-font-family:monospace;
+margin:0;
+padding:15px;
+background:#0f172a;
+color:white;
 display:flex;
 justify-content:center;
-margin-top:30px;
-
-touch-action:manipulation;
-user-select:none;
--webkit-user-select:none;
+align-items:center;
+min-height:100vh;
 }
 
-.calc{
-width:380px;
-}
-
-.display{
-background:#111;
+.container{
+width:100%;
+max-width:380px;
+background:#1e293b;
+border-radius:15px;
 padding:20px;
-font-size:32px;
-text-align:right;
-border:1px solid #00ff9c;
-word-wrap:break-word;
-overflow-wrap:anywhere;
-white-space:normal;
+box-shadow:0 10px 25px rgba(0,0,0,0.4);
 }
 
-.baseSelect{
-margin-top:10px;
+h1{
 text-align:center;
+margin-bottom:10px;
+font-size:22px;
 }
 
-.baseSelect button{
-background:#111;
-border:1px solid #00ff9c;
-color:#00ff9c;
-padding:6px 10px;
-margin:3px;
+.switch{
+display:flex;
+justify-content:center;
+gap:10px;
+margin-bottom:15px;
+}
+
+.switch button{
+padding:6px 12px;
+border:none;
+border-radius:6px;
 cursor:pointer;
-}
-
-.baseSelect button.active{
-background:#00ff9c;
-color:#000;
-}
-
-.results{
-margin-top:10px;
+background:#334155;
+color:white;
 font-size:14px;
-white-space:pre-wrap;
-word-break:break-word;
 }
 
-.bits{
-margin-top:10px;
-letter-spacing:3px;
-font-size:18px;
-word-break:break-all;
+.switch button.active{
+background:#3b82f6;
 }
 
-.bit{
-cursor:pointer;
+.field{
+margin-bottom:10px;
 }
 
-.on{ color:#00ff9c }
-.off{ color:#033 }
-
-.grid{
-margin-top:10px;
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:5px;
+.field label{
+font-size:12px;
+opacity:0.7;
 }
 
-button.key{
-padding:15px;
-background:#111;
-border:1px solid #00ff9c;
-color:#00ff9c;
+.field input{
+width:100%;
+padding:12px;
+border-radius:6px;
+border:none;
+background:#0f172a;
+color:white;
 font-size:16px;
+margin-top:3px;
+outline:none;
+border:2px solid transparent;
+}
+
+.field input.active{
+border-color:#3b82f6;
+box-shadow:0 0 6px #3b82f6;
+}
+
+.keypad{
+margin-top:15px;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+}
+
+.key{
+padding:16px;
+background:#334155;
+border-radius:8px;
+text-align:center;
 cursor:pointer;
+font-size:20px;
+user-select:none;
 }
 
-button.key:hover{
-background:#00ff9c;
-color:#000;
+.key:active{
+background:#3b82f6;
 }
 
-button.key.disabled{
-background:#111;
-border:1px solid #033;
-color:#033;
-cursor:default;
-}
-
-.key-empty{
-visibility:hidden;
+.clear{
+grid-column:span 3;
+background:#ef4444;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div class="calc">
+<div class="container">
 
-<div class="display" id="display">0</div>
+<h1>Conversor de almacenamiento</h1>
 
-<div class="baseSelect">
-
-Entrada:
-
-<button onclick="setBase(10)" id="b10" class="active">DEC</button>
-<button onclick="setBase(16)" id="b16">HEX</button>
-<button onclick="setBase(8)" id="b8">OCT</button>
-<button onclick="setBase(2)" id="b2">BIN</button>
-
+<div class="switch">
+<button id="binario" class="active">Binario (1024)</button>
+<button id="decimal">Decimal (1000)</button>
 </div>
 
-<div class="results" id="results"></div>
+<div class="field"><label>Bits</label><input id="bits"></div>
+<div class="field"><label>Bytes</label><input id="bytes"></div>
+<div class="field"><label>KB</label><input id="kb"></div>
+<div class="field"><label>MB</label><input id="mb"></div>
+<div class="field"><label>GB</label><input id="gb"></div>
+<div class="field"><label>TB</label><input id="tb"></div>
 
-<div class="bits" id="bits"></div>
-
-<div class="grid">
-
-<button class="key" data-key="A" onclick="key('A')">A</button>
-<button class="key" onclick="shiftL()"><<</button>
-<button class="key" onclick="shiftR()">>></button>
-<button class="key" onclick="clearAll()">CE</button>
-
-<button class="key" data-key="B" onclick="key('B')">B</button>
-<button class="key" data-key="7" onclick="key('7')">7</button>
-<button class="key" data-key="8" onclick="key('8')">8</button>
-<button class="key" data-key="9" onclick="key('9')">9</button>
-
-<button class="key" data-key="C" onclick="key('C')">C</button>
-<button class="key" data-key="4" onclick="key('4')">4</button>
-<button class="key" data-key="5" onclick="key('5')">5</button>
-<button class="key" data-key="6" onclick="key('6')">6</button>
-
-<button class="key" data-key="D" onclick="key('D')">D</button>
-<button class="key" data-key="1" onclick="key('1')">1</button>
-<button class="key" data-key="2" onclick="key('2')">2</button>
-<button class="key" data-key="3" onclick="key('3')">3</button>
-
-<button class="key" data-key="E" onclick="key('E')">E</button>
-<button class="key key-empty"></button>
-<button class="key" data-key="0" onclick="key('0')">0</button>
-<button class="key" onclick="back()">⌫</button>
-
-<button class="key" data-key="F" onclick="key('F')">F</button>
-
+<div class="keypad">
+<div class="key">7</div>
+<div class="key">8</div>
+<div class="key">9</div>
+<div class="key">4</div>
+<div class="key">5</div>
+<div class="key">6</div>
+<div class="key">1</div>
+<div class="key">2</div>
+<div class="key">3</div>
+<div class="key">0</div>
+<div class="key">,</div>
+<div class="key">⌫</div>
+<div class="key clear">BORRAR</div>
 </div>
 
 </div>
 
 <script>
 
-let base=10
-let bitSize=16
-let value=0
+let base = 1024
+let activeInput = null
+let replaceOnNextInput = false
 
-function setBase(b){
+const inputs = {
+bits:document.getElementById("bits"),
+bytes:document.getElementById("bytes"),
+kb:document.getElementById("kb"),
+mb:document.getElementById("mb"),
+gb:document.getElementById("gb"),
+tb:document.getElementById("tb")
+}
 
-base=b
+function format(num){
+return Number(num).toLocaleString('es-ES',{maximumFractionDigits:10})
+}
 
-document.querySelectorAll(".baseSelect button").forEach(btn=>btn.classList.remove("active"))
+function parseNumero(str){
+return parseFloat(str.replace(/\./g,'').replace(',','.'))
+}
 
-document.getElementById("b"+b).classList.add("active")
+function setActive(input){
 
-updateKeyboard()
-update()
+Object.values(inputs).forEach(i=>{
+i.classList.remove("active")
+i.readOnly=true
+})
+
+input.classList.add("active")
+input.readOnly=false
+activeInput = input
+replaceOnNextInput = true
 
 }
 
-function updateKeyboard(){
+Object.values(inputs).forEach(input=>{
 
-document.querySelectorAll(".key").forEach(btn=>{
+input.addEventListener("focus",()=>{
+setActive(input)
+})
 
-let k = btn.dataset.key
+input.addEventListener("click",()=>{
+setActive(input)
+})
 
-if(!k) return
-
-let allowed=true
-
-if(base==10){
-if("ABCDEF".includes(k)) allowed=false
-}
-
-if(base==8){
-if(parseInt(k)>=8 || "ABCDEF".includes(k)) allowed=false
-}
-
-if(base==2){
-if(!["0","1"].includes(k)) allowed=false
-}
-
-if(allowed){
-btn.classList.remove("disabled")
-}else{
-btn.classList.add("disabled")
-}
+input.addEventListener("input",()=>{
+convert(input.id)
+})
 
 })
 
-}
+function convert(unit){
 
-function key(k){
+let value = parseNumero(inputs[unit].value)
 
-let btn = document.querySelector(`[data-key="${k}"]`)
+if(isNaN(value)) return
 
-if(btn && btn.classList.contains("disabled")) return
+let bytes
 
-let d=document.getElementById("display")
+switch(unit){
 
-if(d.innerText=="0") d.innerText=""
-
-d.innerText+=k
-
-value=parseInt(d.innerText.replace(/\./g,''),base)||0
-
-update()
-
-}
-
-function formatDecimal(n){
-return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".")
-}
-
-function groupBinary(bin){
-return bin.match(/.{1,4}/g).join(" ")
-}
-
-function update(){
-
-let displayValue=value.toString(base).toUpperCase()
-
-if(base==10) displayValue=formatDecimal(value)
-
-document.getElementById("display").innerText=displayValue
-
-let bin=value.toString(2).padStart(bitSize,'0')
-
-let binGrouped=groupBinary(bin)
-
-function mark(b,label,val){
-
-let prefix = (base==b) ? "> " : "  "
-
-return prefix + label + " " + val
+case "bits": bytes=value/8; break
+case "bytes": bytes=value; break
+case "kb": bytes=value*Math.pow(base,1); break
+case "mb": bytes=value*Math.pow(base,2); break
+case "gb": bytes=value*Math.pow(base,3); break
+case "tb": bytes=value*Math.pow(base,4); break
 
 }
 
-document.getElementById("results").innerText=
-
-mark(10,"DEC",formatDecimal(value)) + "\n" +
-mark(16,"HEX",value.toString(16).toUpperCase()) + "\n" +
-mark(8,"OCT",value.toString(8)) + "\n" +
-mark(2,"BIN",binGrouped)
-
-let html=""
-
-for(let i=0;i<bin.length;i++){
-
-let b=bin[i]
-
-html+=`<span class="bit ${b==1?'on':'off'}" onclick="toggle(${i})">${b}</span>`
+inputs.bits.value = format(bytes*8)
+inputs.bytes.value = format(bytes)
+inputs.kb.value = format(bytes/Math.pow(base,1))
+inputs.mb.value = format(bytes/Math.pow(base,2))
+inputs.gb.value = format(bytes/Math.pow(base,3))
+inputs.tb.value = format(bytes/Math.pow(base,4))
 
 }
 
-document.getElementById("bits").innerHTML=html
+document.querySelectorAll(".key").forEach(key=>{
+
+key.addEventListener("click",()=>{
+
+let value = key.innerText
+
+if(value==="BORRAR"){
+
+Object.values(inputs).forEach(i=>{
+i.value=""
+})
+
+return
+}
+
+if(!activeInput) return
+
+if(value==="⌫"){
+
+activeInput.value = activeInput.value.slice(0,-1)
+convert(activeInput.id)
+return
 
 }
 
-function toggle(p){
-
-let bin=value.toString(2).padStart(bitSize,'0').split('')
-
-bin[p]=bin[p]=='0'?'1':'0'
-
-value=parseInt(bin.join(''),2)
-
-update()
-
+if(replaceOnNextInput){
+activeInput.value = value
+replaceOnNextInput = false
+}else{
+activeInput.value += value
 }
 
-function shiftL(){
-value=value<<1
-update()
+convert(activeInput.id)
+
+})
+
+})
+
+document.getElementById("binario").onclick=()=>{
+base=1024
+document.getElementById("binario").classList.add("active")
+document.getElementById("decimal").classList.remove("active")
 }
 
-function shiftR(){
-value=value>>1
-update()
+document.getElementById("decimal").onclick=()=>{
+base=1000
+document.getElementById("decimal").classList.add("active")
+document.getElementById("binario").classList.remove("active")
 }
 
-function clearAll(){
-value=0
-update()
-}
+document.addEventListener('dblclick',function(e){
+e.preventDefault()
+})
 
-function back(){
-
-let s=value.toString(base)
-s=s.slice(0,-1)
-
-value=parseInt(s,base)||0
-
-update()
-
-}
-
-updateKeyboard()
-update()
+document.addEventListener('gesturestart',function(e){
+e.preventDefault()
+})
 
 </script>
 
 </body>
 </html>
+
