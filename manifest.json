@@ -1,0 +1,15 @@
+{
+"name": "Programmer Calculator",
+"short_name": "ProgCalc",
+"display": "standalone",
+"background_color": "#000000",
+"theme_color": "#000000",
+"start_url": "index.html",
+"icons": [
+{
+"src": "icon.png",
+"sizes": "512x512",
+"type": "image/png"
+}
+]
+}

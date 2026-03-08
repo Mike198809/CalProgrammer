@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Programmer Calculator</title>
+
+<!-- PWA SUPPORT -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="ProgCalc">
+<link rel="apple-touch-icon" href="icon.png">
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+
+body{
+background:#000;
+color:#00ff9c;
+font-family:monospace;
+display:flex;
+justify-content:center;
+margin-top:30px;
+}
+
+.calc{
+width:380px;
+}
+
+.display{
+background:#111;
+padding:20px;
+font-size:32px;
+text-align:right;
+border:1px solid #00ff9c;
+word-wrap:break-word;
+overflow-wrap:anywhere;
+white-space:normal;
+}
+
+.baseSelect{
+margin-top:10px;
+text-align:center;
+}
+
+.baseSelect button{
+background:#111;
+border:1px solid #00ff9c;
+color:#00ff9c;
+padding:6px 10px;
+margin:3px;
+cursor:pointer;
+}
+
+.baseSelect button.active{
+background:#00ff9c;
+color:#000;
+}
+
+.results{
+margin-top:10px;
+font-size:14px;
+white-space:pre-wrap;
+word-break:break-word;
+}
+
+.bits{
+margin-top:10px;
+letter-spacing:3px;
+font-size:18px;
+word-break:break-all;
+}
+
+.bit{
+cursor:pointer;
+}
+
+.on{ color:#00ff9c }
+.off{ color:#033 }
+
+.grid{
+margin-top:10px;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:5px;
+}
+
+button.key{
+padding:15px;
+background:#111;
+border:1px solid #00ff9c;
+color:#00ff9c;
+font-size:16px;
+cursor:pointer;
+}
+
+button.key:hover{
+background:#00ff9c;
+color:#000;
+}
+
+button.key.disabled{
+background:#111;
+border:1px solid #033;
+color:#033;
+cursor:default;
+}
+
+.key-empty{
+visibility:hidden;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="calc">
+
+<div class="display" id="display">0</div>
+
+<div class="baseSelect">
+
+Entrada:
+
+<button onclick="setBase(10)" id="b10" class="active">DEC</button>
+<button onclick="setBase(16)" id="b16">HEX</button>
+<button onclick="setBase(8)" id="b8">OCT</button>
+<button onclick="setBase(2)" id="b2">BIN</button>
+
+</div>
+
+<div class="results" id="results"></div>
+
+<div class="bits" id="bits"></div>
+
+<div class="grid">
+
+<button class="key" data-key="A" onclick="key('A')">A</button>
+<button class="key" onclick="shiftL()"><<</button>
+<button class="key" onclick="shiftR()">>></button>
+<button class="key" onclick="clearAll()">CE</button>
+
+<button class="key" data-key="B" onclick="key('B')">B</button>
+<button class="key" data-key="7" onclick="key('7')">7</button>
+<button class="key" data-key="8" onclick="key('8')">8</button>
+<button class="key" data-key="9" onclick="key('9')">9</button>
+
+<button class="key" data-key="C" onclick="key('C')">C</button>
+<button class="key" data-key="4" onclick="key('4')">4</button>
+<button class="key" data-key="5" onclick="key('5')">5</button>
+<button class="key" data-key="6" onclick="key('6')">6</button>
+
+<button class="key" data-key="D" onclick="key('D')">D</button>
+<button class="key" data-key="1" onclick="key('1')">1</button>
+<button class="key" data-key="2" onclick="key('2')">2</button>
+<button class="key" data-key="3" onclick="key('3')">3</button>
+
+<button class="key" data-key="E" onclick="key('E')">E</button>
+<button class="key key-empty"></button>
+<button class="key" data-key="0" onclick="key('0')">0</button>
+<button class="key" onclick="back()">⌫</button>
+
+<button class="key" data-key="F" onclick="key('F')">F</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* service worker */
+
+if ('serviceWorker' in navigator) {
+navigator.serviceWorker.register('sw.js');
+}
+
+let base=10
+let bitSize=16
+let value=0
+
+function setBase(b){
+
+base=b
+
+document.querySelectorAll(".baseSelect button").forEach(btn=>btn.classList.remove("active"))
+
+document.getElementById("b"+b).classList.add("active")
+
+updateKeyboard()
+update()
+
+}
+
+function updateKeyboard(){
+
+document.querySelectorAll(".key").forEach(btn=>{
+
+let k = btn.dataset.key
+
+if(!k) return
+
+let allowed=true
+
+if(base==10){
+if("ABCDEF".includes(k)) allowed=false
+}
+
+if(base==8){
+if(parseInt(k)>=8 || "ABCDEF".includes(k)) allowed=false
+}
+
+if(base==2){
+if(!["0","1"].includes(k)) allowed=false
+}
+
+if(allowed){
+btn.classList.remove("disabled")
+}else{
+btn.classList.add("disabled")
+}
+
+})
+
+}
+
+function key(k){
+
+let btn = document.querySelector(`[data-key="${k}"]`)
+
+if(btn && btn.classList.contains("disabled")) return
+
+let d=document.getElementById("display")
+
+if(d.innerText=="0") d.innerText=""
+
+d.innerText+=k
+
+value=parseInt(d.innerText.replace(/\./g,''),base)||0
+
+update()
+
+}
+
+function formatDecimal(n){
+return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".")
+}
+
+function groupBinary(bin){
+return bin.match(/.{1,4}/g).join(" ")
+}
+
+function update(){
+
+let displayValue=value.toString(base).toUpperCase()
+
+if(base==10) displayValue=formatDecimal(value)
+
+document.getElementById("display").innerText=displayValue
+
+let bin=value.toString(2).padStart(bitSize,'0')
+
+let binGrouped=groupBinary(bin)
+
+function mark(b,label,val){
+
+let prefix = (base==b) ? "> " : "  "
+
+return prefix + label + " " + val
+
+}
+
+document.getElementById("results").innerText=
+
+mark(10,"DEC",formatDecimal(value)) + "\n" +
+mark(16,"HEX",value.toString(16).toUpperCase()) + "\n" +
+mark(8,"OCT",value.toString(8)) + "\n" +
+mark(2,"BIN",binGrouped)
+
+let html=""
+
+for(let i=0;i<bin.length;i++){
+
+let b=bin[i]
+
+html+=`<span class="bit ${b==1?'on':'off'}" onclick="toggle(${i})">${b}</span>`
+
+}
+
+document.getElementById("bits").innerHTML=html
+
+}
+
+function toggle(p){
+
+let bin=value.toString(2).padStart(bitSize,'0').split('')
+
+bin[p]=bin[p]=='0'?'1':'0'
+
+value=parseInt(bin.join(''),2)
+
+update()
+
+}
+
+function shiftL(){
+value=value<<1
+update()
+}
+
+function shiftR(){
+value=value>>1
+update()
+}
+
+function clearAll(){
+value=0
+update()
+}
+
+function back(){
+
+let s=value.toString(base)
+s=s.slice(0,-1)
+
+value=parseInt(s,base)||0
+
+update()
+
+}
+
+updateKeyboard()
+update()
+
+</script>
+
+</body>
+</html>
