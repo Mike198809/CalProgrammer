@@ -9,13 +9,12 @@
 
 <title>Programmer Calculator</title>
 
-<!-- PWA / iPhone app settings -->
+<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+<link rel="manifest" href="manifest.json">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="ProgCalc">
-
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="manifest" href="manifest.json">
 
 <style>
 
@@ -179,10 +178,6 @@ Entrada:
 
 <script>
 
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('sw.js');
-}
-
 let base=10
 let bitSize=16
 let value=0
@@ -344,4 +339,3 @@ update()
 
 </body>
 </html>
-
